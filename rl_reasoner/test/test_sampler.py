@@ -1,17 +1,22 @@
-import numpy as np
 import json
 import os
 import tensorflow as tf
 from tqdm import tqdm
-from pg_rnn import PolicyGradientRNN
-from sampler import Sampler
-from model import policy_network
-from environment import KGEnvironment
+from rl_reasoner.pg_rnn import PolicyGradientRNN
+from rl_reasoner.sampler import Sampler
+from rl_reasoner.model import policy_network
+from rl_reasoner.environment import KGEnvironment
+
+from tensorflow.python import debug as tf_debug
+
+
+testfile = "../data/test_data_1.tsv"
+tmpdir = "../data/tmp"
 
 config = json.load(open("configuration.json"))
 train = config["train"]
 
-env = KGEnvironment("Lisa", "sister_of", "Bart", graph_file)
+env = KGEnvironment("Lisa", "sister_of", "Bart", testfile)
 observation_dim = env.observation_dim
 
 embedding_size = config["embedding_size"]
@@ -32,15 +37,12 @@ else:
 
 #tensorflow
 sess = tf.Session()
+#sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 
 # checkpointing
-base_file = "_".join([k + "-" + str(v) for k, v in sorted(config.items())
-                                    if k not in ["train", "learning"]])
-os.makedirs(base_file, exist_ok=True)
-json.dump(config, open(base_file + "/configuration.json", "w"))
-writer = tf.summary.FileWriter(base_file + "/summary/")
-save_path = base_file + '/models/'
+writer = tf.summary.FileWriter(tmpdir + "/summary/")
+save_path = tmpdir + '/models/'
 os.makedirs(save_path, exist_ok=True)
 
 pg_rnn = PolicyGradientRNN(sess,
@@ -53,7 +55,7 @@ pg_rnn = PolicyGradientRNN(sess,
                            config["gru_unit_size"],
                            config["num_step"],
                            config["num_layers"],
-                           save_path + env.spec.id,
+                           save_path + env.spec["id"],
                            global_step,
                            config["max_gradient_norm"],
                            config["entropy_bonus"],
@@ -71,6 +73,7 @@ sampler = Sampler(pg_rnn,
                   config["discount"],
                   writer)
 
+batch = sampler.samples()
 reward = []
 for _ in tqdm(range(config["num_itr"])):
     if train:

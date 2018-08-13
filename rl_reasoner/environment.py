@@ -61,11 +61,11 @@ class KGEnvironment():
         return self.graph
 
     def reset(self):
-        print("reset")
+        self.target_found = False
         self.current_relation = self.relations['DUMMY_RELATION']
         self.current_entity = self.query_entity
         self.next_actions = self.generate_next_actions()
-        return np.array(self.get_state())
+        return np.array(self.get_state()), np.array(self.get_available_actions())
 
     def get_state(self):
         return np.array((self.current_relation, self.current_entity))
@@ -75,23 +75,25 @@ class KGEnvironment():
 
     def step(self, action_idx):
         action = self.next_actions[action_idx]
-        print(action)
-        if self.graph.has_edge(self.current_entity, action[1], key=action[0]):
+        if action[0] == self.relations['NO_OP']:
+            self.current_relation = action[0]
+        elif self.graph.has_edge(self.current_entity, action[1], key=action[0]):
             self.current_relation = action[0]
             self.current_entity = action[1]
             self.next_actions = self.generate_next_actions()
 
         if self.target_found:
-            return np.array(self.get_state()), 0, True, {}
+            return np.array(self.get_state()), np.array(self.get_available_actions()), 0, True, {}
         else:
             if self.current_entity == self.target:
                 self.target_found = True
-                return np.array(self.get_state()), 1, True, {}
+                return np.array(self.get_state()), np.array(self.get_available_actions()), 10, True, {}
             else:
-                return np.array(self.get_state()), 0, False, {}
+                return np.array(self.get_state()), np.array(self.get_available_actions()), -1, False, {}
 
     def generate_next_actions(self):
         next_actions = [(e[2],e[1]) for e in self.graph.edges(self.current_entity, keys=True)]
+        next_actions.append((self.relations['NO_OP'], self.current_entity)) # add NO-OP
         return next_actions
 
     def get_available_actions(self):

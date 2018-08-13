@@ -9,6 +9,7 @@ class PolicyGradientRNN(object):
                  policy_network,
                  observation_dim,
                  embedding_size,
+                 vocab_size,
                  mlp_hidden_size,
                  gru_unit_size,
                  num_step,
@@ -35,7 +36,8 @@ class PolicyGradientRNN(object):
         self.policy_network  = policy_network
         self.observation_dim = observation_dim
         self.embedding_size  = embedding_size
-        self.mlp_hidden_size  = mlp_hidden_size
+        self.vocab_size      = vocab_size
+        self.mlp_hidden_size = mlp_hidden_size
         self.loss_function   = loss_function
 
         # training parameters
@@ -65,7 +67,7 @@ class PolicyGradientRNN(object):
 
     def create_input_placeholders(self):
         with tf.name_scope("inputs"):
-            self.observations = tf.placeholder(tf.float32, (None, None) + self.observation_dim, name="observations")
+            self.observations = tf.placeholder(tf.int32, (None, None) + self.observation_dim, name="observations")
             self.actions = tf.placeholder(tf.int32, (None, None), name="actions")
             self.returns = tf.placeholder(tf.float32, (None, None), name="returns")
             self.init_states = tuple(tf.placeholder(tf.float32, (None, self.gru_unit_size), name="init_states" + str(i))
@@ -74,40 +76,46 @@ class PolicyGradientRNN(object):
             self.actions_flatten = tf.reshape(self.actions, (-1,))
             self.returns_flatten = tf.reshape(self.returns, (-1,))
 
+            self.available_actions = tf.placeholder(tf.int32, (None, None, None, 2), name="available_actions")
+
     def create_variables_for_actions(self):
         with tf.name_scope("generating_actions"):
             with tf.variable_scope("policy_network"):
-                self.logit, self.final_state = self.policy_network(self.observations,
+                self.logit, self.final_state = self.policy_network(self.observations, self.available_actions,
                                                                    self.init_states, self.seq_len,
                                                                    self.gru_unit_size, self.num_layers,
-                                                                   self.embedding_size, self.mlp_hidden_size)
+                                                                   self.embedding_size, self.mlp_hidden_size, self.vocab_size)
             self.probs = tf.nn.softmax(self.logit)
             self.log_probs = tf.nn.log_softmax(self.logit)
             with tf.name_scope("computing_entropy"):
-                self.entropy = - tf.reduce_sum(self.probs * self.log_probs, axis=1)
+                self.entropy = - tf.reduce_sum(self.probs * self.log_probs, axis=2)
 
     def create_variables_for_optimization(self):
         with tf.name_scope("optimization"):
             with tf.name_scope("masker"):
                     self.mask = tf.sequence_mask(self.seq_len, self.num_step)
-                    self.mask = tf.reshape(tf.cast(self.mask, tf.float32), (-1,))
-            if self.loss_function == "cross_entropy":
+                    self.mask =  tf.cast(self.mask, tf.float32) # tf.reshape(tf.cast(self.mask, tf.float32), (-1,))
+            #if self.loss_function == "cross_entropy":
+            with tf.name_scope("loss"):
                 self.pl_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logit,
-                                                                              labels=self.actions_flatten)
-            # elif self.loss_function == "l2":
-            #     self.one_hot_actions = tf.one_hot(self.actions_flatten, self.num_actions)
-            #     self.pl_loss = tf.reduce_mean((self.probs - self.one_hot_actions) ** 2,
-            #                                   axis=1)
-            else:
-                    raise ValueError("loss function type is not defined")
+                                                                                  labels=self.actions)
+                # elif self.loss_function == "l2":
+                #     self.one_hot_actions = tf.one_hot(self.actions_flatten, self.num_actions)
+                #     self.pl_loss = tf.reduce_mean((self.probs - self.one_hot_actions) ** 2,
+                #                                   axis=1)
+                
+                #else:
+                #        raise ValueError("loss function type is not defined")
 
-            self.pl_loss = tf.multiply(self.pl_loss, self.mask)
-            self.pl_loss = tf.reduce_mean(tf.multiply(self.pl_loss, self.returns_flatten))
+                self.pl_loss = tf.multiply(self.pl_loss, self.mask)
+                self.pl_loss = tf.reduce_mean(tf.multiply(self.pl_loss, self.returns))
 
-            self.entropy = tf.multiply(self.entropy, self.mask)
-            self.entropy = tf.reduce_mean(self.entropy)
+                self.entropy = tf.multiply(self.entropy, self.mask)
+                self.entropy = tf.reduce_mean(self.entropy)
 
-            self.loss = self.pl_loss - self.entropy_bonus * self.entropy
+                self.loss = self.pl_loss - self.entropy_bonus * self.entropy
+
+                self.actions_out = tf.reduce_mean(self.actions, 0)
 
             self.trainable_variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="policy_network")
             self.gradients = self.optimizer.compute_gradients(self.loss, var_list=self.trainable_variables)
@@ -149,18 +157,21 @@ class PolicyGradientRNN(object):
         self.create_summaries()
         self.merge_summaries()
 
-    def sampleAction(self, observations, init_states, seq_len=[1]):
+    def sampleAction(self, observations, available_actions, init_states, seq_len=[1]):
         probs, final_state = self.session.run([self.probs, self.final_state],
-                                              {self.observations: observations, self.init_states: init_states,
+                                              {self.observations: observations, 
+                                               self.available_actions: available_actions,
+                                               self.init_states: init_states,
                                                self.seq_len: seq_len})
-        print(probs)
-        return np.random.choice(len(probs[0]), p=probs[0]), final_state
+        print(probs[0][0])
+        return np.random.choice(len(probs[0][0]), p=probs[0][0]), final_state
 
-    def update_parameters(self, observations, actions, returns, init_states, seq_len):
+    def update_parameters(self, observations, available_actions, actions, returns, init_states, seq_len):
         write_summary = self.train_itr % self.summary_every == 0
         _, summary = self.session.run([self.train_op,
                                        self.summarize if write_summary else self.no_op],
                                       {self.observations: observations,
+                                       self.available_actions: available_actions,
                                        self.actions: actions,
                                        self.returns: returns,
                                        self.init_states: init_states,

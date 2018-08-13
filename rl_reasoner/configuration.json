@@ -1,21 +1,21 @@
 {
-  "batch_size": 10,
-  "embedding_size": 50,
-  "mlp_hidden_size": 50,
-  "entropy_bonus": 0.01,
+  "batch_size": 60,
+  "embedding_size": 5,
+  "mlp_hidden_size": 5,
+  "entropy_bonus": 0.000,
   "env_name": "Acrobot-v1",
   "gru_unit_size": 16,
   "learning": {"learning_rate": 0.01,
-               "learning_adaptive": 1,
+               "learning_adaptive": 0,
                "decay_steps": 1000,
                "decay_rate": 0.9
              },
   "loss_function": "cross_entropy",
   "max_gradient_norm": 5.0,
-  "max_step": 3,
-  "num_itr": 100,
-  "num_layers": 3,
-  "num_step": 10,
-  "train": 0,
-  "discount": 1.0
+  "max_step": 5,
+  "num_itr": 500,
+  "num_layers": 1,
+  "num_step": 5,
+  "train": 1,
+  "discount": 0.5
 }

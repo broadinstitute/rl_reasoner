@@ -35,17 +35,18 @@ class Sampler(object):
         return scipy.signal.lfilter([1.], [1, -self.discount], rewards[::-1])[::-1]
 
     def collect_one_episode(self):
-        observations, actions, rewards = [], [], []
+        observations, available_actions, actions, rewards = [], [], [], []
         init_states = tuple([] for _ in range(self.num_layers))
-        observation = self.env.reset()
+        observation, available_actions_ep = self.env.reset()
         init_state = tuple([np.zeros((1, self.gru_unit_size)) for _ in range(self.num_layers)])
 
         for t in range(self.max_step):
-            action, final_state = self.policy.sampleAction(observation[np.newaxis, np.newaxis, :], init_state)
-            next_observation, reward, done, _ = self.env.step(action)
+            action, final_state = self.policy.sampleAction(observation[np.newaxis, np.newaxis, :], available_actions_ep[np.newaxis, np.newaxis, :], init_state)
+            next_observation, next_available_actions_ep, reward, done, _ = self.env.step(action)
 
             # appending the experience
             observations.append(observation)
+            available_actions.append(available_actions_ep)
             actions.append(action)
             rewards.append(reward)
             for i in range(self.num_layers):
@@ -53,6 +54,7 @@ class Sampler(object):
 
             # going to next state
             observation = next_observation
+            available_actions_ep = next_available_actions_ep
             init_state = final_state
             if done:
                 break
@@ -60,8 +62,10 @@ class Sampler(object):
         self.flush_summary(np.sum(rewards))
         returns = self.compute_monte_carlo_returns(rewards)
         returns = (returns - np.mean(returns)) / (np.std(returns) + 1e-8)
+        available_actions = self.expand_available_actions(available_actions, axis=0)
         episode = dict(
                     observations = np.array(observations),
+                    available_actions = np.array(available_actions),
                     actions = np.array(actions),
                     returns = np.array(returns),
                     init_states = init_states,
@@ -77,6 +81,7 @@ class Sampler(object):
             len_samples += np.sum(episode["seq_len"])
         # prepare input
         observations = np.concatenate([episode["observations"] for episode in episodes])
+        available_actions = np.concatenate(self.expand_available_actions([episode["available_actions"] for episode in episodes], axis=2))
         actions = np.concatenate([episode["actions"] for episode in episodes])
         returns = np.concatenate([episode["returns"] for episode in episodes])
         init_states = tuple(
@@ -86,6 +91,7 @@ class Sampler(object):
         seq_len = np.concatenate([episode["seq_len"] for episode in episodes])
         batch = dict(
                     observations = observations,
+                    available_actions = available_actions,
                     actions = actions,
                     returns = returns,
                     init_states = init_states,
@@ -118,6 +124,17 @@ class Sampler(object):
         seq_len = [self.num_step] * (batch_from_episode - 1) + [last_batch_size]
         batched_episode["seq_len"] = np.array(seq_len)
         return batched_episode
+
+    def expand_available_actions(self, actions, axis=0):
+        npad = np.zeros((actions[0].ndim,2), dtype=np.int32)
+        n_actions = [np.ma.size(action_list, axis) for action_list in actions]
+        max_n_actions = max(n_actions)
+        for i in range(len(n_actions)):
+            extra_length = max_n_actions - n_actions[i]
+            if extra_length > 0:
+                npad[axis,1] = extra_length
+                actions[i] = np.pad(actions[i], pad_width=npad, mode='constant', constant_values=0)
+        return actions
 
     def samples(self):
         return self.collect_one_batch()
