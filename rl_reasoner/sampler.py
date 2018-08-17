@@ -37,11 +37,11 @@ class Sampler(object):
     def collect_one_episode(self):
         observations, available_actions, actions, rewards = [], [], [], []
         init_states = tuple([] for _ in range(self.num_layers))
-        observation, available_actions_ep = self.env.reset()
+        observation, available_actions_ep, query_relation = self.env.reset()
         init_state = tuple([np.zeros((1, self.gru_unit_size)) for _ in range(self.num_layers)])
 
         for t in range(self.max_step):
-            action, final_state = self.policy.sampleAction(observation[np.newaxis, np.newaxis, :], available_actions_ep[np.newaxis, np.newaxis, :], init_state)
+            action, final_state = self.policy.sampleAction(observation[np.newaxis, np.newaxis, :], available_actions_ep[np.newaxis, np.newaxis, :], np.array([[query_relation]]), init_state)
             next_observation, next_available_actions_ep, reward, done, _ = self.env.step(action)
 
             # appending the experience
@@ -69,7 +69,7 @@ class Sampler(object):
                     actions = np.array(actions),
                     returns = np.array(returns),
                     init_states = init_states,
-                    )
+                    query_relations = np.repeat(query_relation,len(actions)))
         return self.expand_episode(episode)
 
     def collect_one_batch(self):
@@ -90,13 +90,15 @@ class Sampler(object):
                                        for episode in episodes])
                        for i in range(self.num_layers))
         seq_len = np.concatenate([episode["seq_len"] for episode in episodes])
+        query_relations = np.concatenate([episode["query_relations"] for episode in episodes])
         batch = dict(
                     observations = observations,
                     available_actions = available_actions,
                     actions = actions,
                     returns = returns,
                     init_states = init_states,
-                    seq_len = seq_len
+                    seq_len = seq_len,
+                    query_relations = query_relations
                     )
         return batch
 

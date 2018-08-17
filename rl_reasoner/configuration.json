@@ -15,7 +15,7 @@
   "max_step": 3,
   "num_itr": 500,
   "num_layers": 1,
-  "num_step": 5,
+  "num_step": 3,
   "train": 1,
   "discount": 1.0,
   "baseline_learning_rate":0.0

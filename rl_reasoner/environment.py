@@ -65,7 +65,7 @@ class KGEnvironment():
         self.current_relation = self.relations['DUMMY_RELATION']
         self.current_entity = self.query_entity
         self.next_actions = self.generate_next_actions()
-        return np.array(self.get_state()), np.array(self.get_available_actions())
+        return np.array(self.get_state()), np.array(self.get_available_actions()), self.query_relation
 
     def get_state(self):
         return np.array((self.current_relation, self.current_entity))

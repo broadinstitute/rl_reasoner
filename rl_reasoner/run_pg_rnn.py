@@ -79,6 +79,7 @@ for _ in tqdm(range(config["num_itr"])):
                                  batch["available_actions"],
                                  batch["actions"],
                                  batch["returns"],
+                                 batch["query_relations"],
                                  batch["init_states"],
                                  batch["seq_len"])
     else:

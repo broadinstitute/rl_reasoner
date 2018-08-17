@@ -77,6 +77,7 @@ class PolicyGradientRNN(object):
             self.returns_flatten = tf.reshape(self.returns, (-1,))
 
             self.available_actions = tf.placeholder(tf.int32, (None, None, None, 2), name="available_actions")
+            self.query_relations = tf.placeholder(tf.int32, (None, None), name="query_relations")
 
     def create_variables_for_actions(self):
         with tf.name_scope("generating_actions"):
@@ -84,7 +85,7 @@ class PolicyGradientRNN(object):
                 self.logit, self.final_state = self.policy_network(self.observations, self.available_actions,
                                                                    self.init_states, self.seq_len,
                                                                    self.gru_unit_size, self.num_layers,
-                                                                   self.embedding_size, self.mlp_hidden_size, self.vocab_size)
+                                                                   self.embedding_size, self.mlp_hidden_size, self.vocab_size, self.query_relations)
             self.probs = tf.nn.softmax(self.logit)
             self.log_probs = tf.nn.log_softmax(self.logit)
             with tf.name_scope("computing_entropy"):
@@ -157,16 +158,17 @@ class PolicyGradientRNN(object):
         self.create_summaries()
         self.merge_summaries()
 
-    def sampleAction(self, observations, available_actions, init_states, seq_len=[1]):
+    def sampleAction(self, observations, available_actions, query_relations, init_states, seq_len=[1]):
         probs, final_state = self.session.run([self.probs, self.final_state],
                                               {self.observations: observations, 
                                                self.available_actions: available_actions,
+                                               self.query_relations: query_relations,
                                                self.init_states: init_states,
                                                self.seq_len: seq_len})
         print(probs[0][0])
         return np.random.choice(len(probs[0][0]), p=probs[0][0]), final_state
 
-    def update_parameters(self, observations, available_actions, actions, returns, init_states, seq_len):
+    def update_parameters(self, observations, available_actions, actions, returns, query_relations, init_states, seq_len):
         write_summary = self.train_itr % self.summary_every == 0
         _, summary = self.session.run([self.train_op,
                                        self.summarize if write_summary else self.no_op],
@@ -174,6 +176,7 @@ class PolicyGradientRNN(object):
                                        self.available_actions: available_actions,
                                        self.actions: actions,
                                        self.returns: returns,
+                                       self.query_relations: query_relations,
                                        self.init_states: init_states,
                                        self.seq_len: seq_len})
 

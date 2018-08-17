@@ -73,15 +73,16 @@ sampler = Sampler(pg_rnn,
                   config["discount"],
                   writer)
 
-batch = sampler.samples()
 reward = []
 for _ in tqdm(range(config["num_itr"])):
     if train:
         batch = sampler.samples()
+        print(batch["query_relations"])
         pg_rnn.update_parameters(batch["observations"],
                                  batch["available_actions"],
                                  batch["actions"],
                                  batch["returns"],
+                                 batch["query_relations"],
                                  batch["init_states"],
                                  batch["seq_len"])
     else:
