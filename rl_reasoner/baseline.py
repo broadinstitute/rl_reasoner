@@ -20,5 +20,5 @@ class ReactiveBaseline(baseline):
         return self.baseline
 
     def update(self, target):
-        self.b = tf.add((1 - self.learning_rate) * self.baseline,
+        self.baseline = tf.add((1 - self.learning_rate) * self.baseline,
                         self.learning_rate * target)
