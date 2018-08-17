@@ -61,7 +61,7 @@ class Sampler(object):
 
         self.flush_summary(np.sum(rewards))
         returns = self.compute_monte_carlo_returns(rewards)
-        returns = (returns - np.mean(returns)) / (np.std(returns) + 1e-8)
+        # returns = (returns - np.mean(returns)) / (np.std(returns) + 1e-8)  # moved to batch following MINERVA!
         available_actions = self.expand_available_actions(available_actions, axis=0)
         episode = dict(
                     observations = np.array(observations),
@@ -84,6 +84,7 @@ class Sampler(object):
         available_actions = np.concatenate(self.expand_available_actions([episode["available_actions"] for episode in episodes], axis=2))
         actions = np.concatenate([episode["actions"] for episode in episodes])
         returns = np.concatenate([episode["returns"] for episode in episodes])
+        returns = (returns - np.mean(returns)) / (np.std(returns) + 1e-8)  # moved here following MINERVA
         init_states = tuple(
                        np.concatenate([episode["init_states"][i]
                                        for episode in episodes])

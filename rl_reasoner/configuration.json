@@ -12,10 +12,11 @@
              },
   "loss_function": "cross_entropy",
   "max_gradient_norm": 5.0,
-  "max_step": 5,
+  "max_step": 3,
   "num_itr": 500,
   "num_layers": 1,
   "num_step": 5,
   "train": 1,
-  "discount": 0.5
+  "discount": 1.0,
+  "baseline_learning_rate":0.0
 }

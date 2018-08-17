@@ -87,9 +87,9 @@ class KGEnvironment():
         else:
             if self.current_entity == self.target:
                 self.target_found = True
-                return np.array(self.get_state()), np.array(self.get_available_actions()), 10, True, {}
+                return np.array(self.get_state()), np.array(self.get_available_actions()), 1, True, {}
             else:
-                return np.array(self.get_state()), np.array(self.get_available_actions()), -1, False, {}
+                return np.array(self.get_state()), np.array(self.get_available_actions()), 0, False, {}
 
     def generate_next_actions(self):
         next_actions = [(e[2],e[1]) for e in self.graph.edges(self.current_entity, keys=True)]
