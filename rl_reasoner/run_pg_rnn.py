@@ -8,10 +8,15 @@ from sampler import Sampler
 from model import policy_network
 from environment import KGEnvironment
 
+from tensorflow.python import debug as tf_debug
+
 config = json.load(open("configuration.json"))
 train = config["train"]
 
-env = KGEnvironment("Lisa", "sister_of", "Bart", graph_file)
+graph_file = config["graph_file"]
+query_file = config["query_file"]
+
+env = KGEnvironment(query_file, graph_file)
 observation_dim = env.observation_dim
 
 embedding_size = config["embedding_size"]
@@ -30,17 +35,28 @@ if learning_adaptive:
 else:
     learning_rate = config["learning"]["learning_rate"]
 
-#tensorflow
+# read embeddings
+entity_embeddings = None
+if config['entity_embedding_file'] != '':
+    with open(config['entity_embedding_file']) as f:
+        entity_embeddings = np.loadtxt(f)
+
+relation_embeddings = None
+if config['relation_embedding_file'] != '':
+    with open(config['relation_embedding_file']) as f:
+        relation_embeddings = np.loadtxt(f)
+
+# tensorflow
 sess = tf.Session()
 optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 
 # checkpointing
-base_file = "_".join([k + "-" + str(v) for k, v in sorted(config.items())
+base_folder = "_".join([k + "-" + str(v) for k, v in sorted(config.items())
                                     if k not in ["train", "learning"]])
-os.makedirs(base_file, exist_ok=True)
-json.dump(config, open(base_file + "/configuration.json", "w"))
-writer = tf.summary.FileWriter(base_file + "/summary/")
-save_path = base_file + '/models/'
+os.makedirs(base_folder, exist_ok=True)
+json.dump(config, open(base_folder + "/configuration.json", "w"))
+writer = tf.summary.FileWriter(base_folder + "/summary/")
+save_path = base_folder + '/models/'
 os.makedirs(save_path, exist_ok=True)
 
 pg_rnn = PolicyGradientRNN(sess,
@@ -49,6 +65,10 @@ pg_rnn = PolicyGradientRNN(sess,
                            observation_dim,
                            embedding_size,
                            (len(env.entities), len(env.relations)),
+                           entity_embeddings,
+                           relation_embeddings,
+                           config["train_entity_embeddings"],
+                           config["train_relation_embeddings"],
                            mlp_hidden_size,
                            config["gru_unit_size"],
                            config["num_step"],
@@ -75,6 +95,7 @@ reward = []
 for _ in tqdm(range(config["num_itr"])):
     if train:
         batch = sampler.samples()
+        print(batch["query_relations"])
         pg_rnn.update_parameters(batch["observations"],
                                  batch["available_actions"],
                                  batch["actions"],

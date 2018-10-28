@@ -10,6 +10,10 @@ class PolicyGradientRNN(object):
                  observation_dim,
                  embedding_size,
                  vocab_size,
+                 entity_embeddings,
+                 relation_embeddings,
+                 train_entity_embeddings,
+                 train_relation_embeddings,
                  mlp_hidden_size,
                  gru_unit_size,
                  num_step,
@@ -43,17 +47,30 @@ class PolicyGradientRNN(object):
         # training parameters
         self.max_gradient    = max_gradient
         self.entropy_bonus   = entropy_bonus
+        self.train_entity_embeddings = train_entity_embeddings
+        self.train_relation_embeddings = train_relation_embeddings
 
         # counter
         self.global_step = global_step
 
-        # create and initialize variables
+        # create variables
         self.create_variables()
+
+        # intitialize variables
         var_lists = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
         self.session.run(tf.variables_initializer(var_lists))
 
         # make sure all variables are initialized
         self.session.run(tf.assert_variables_initialized())
+
+        # initialize embeddings
+        if entity_embeddings is not None:
+            entity_embedding_init = self.entity_embedding.assign(self.entity_embedding_placeholder)
+            self.session.run([entity_embedding_init], {self.entity_embedding_placeholder: entity_embeddings})
+
+        if relation_embeddings is not None:
+            relation_embedding_init = self.relation_embedding.assign(self.relation_embedding_placeholder)
+            self.session.run([relation_embedding_init], {self.relation_embedding_placeholder: relation_embeddings})
 
         # try load saved model
         self.saver = tf.train.Saver(tf.global_variables())
@@ -79,13 +96,18 @@ class PolicyGradientRNN(object):
             self.available_actions = tf.placeholder(tf.int32, (None, None, None, 2), name="available_actions")
             self.query_relations = tf.placeholder(tf.int32, (None, None), name="query_relations")
 
+            self.entity_embedding_placeholder = tf.placeholder(tf.float32, (self.vocab_size, self.embedding_size), name="entity_embedding")
+            self.relation_embedding_placeholder = tf.placeholder(tf.float32, (self.vocab_size, self.embedding_size), name="relation_embedding")
+
     def create_variables_for_actions(self):
         with tf.name_scope("generating_actions"):
             with tf.variable_scope("policy_network"):
-                self.logit, self.final_state = self.policy_network(self.observations, self.available_actions,
+                self.logit, self.final_state, self.entity_embedding, self.relation_embedding = self.policy_network(self.observations, self.available_actions,
                                                                    self.init_states, self.seq_len,
                                                                    self.gru_unit_size, self.num_layers,
-                                                                   self.embedding_size, self.mlp_hidden_size, self.vocab_size, self.query_relations)
+                                                                   self.embedding_size, self.mlp_hidden_size,
+                                                                   self.vocab_size, self.query_relations,
+                                                                   self.train_entity_embeddings, self.train_relation_embeddings)
             self.probs = tf.nn.softmax(self.logit)
             self.log_probs = tf.nn.log_softmax(self.logit)
             with tf.name_scope("computing_entropy"):

@@ -3,7 +3,7 @@
   "embedding_size": 5,
   "mlp_hidden_size": 5,
   "entropy_bonus": 0.000,
-  "env_name": "Acrobot-v1",
+  "env_name": "knowledge_graph",
   "gru_unit_size": 16,
   "learning": {"learning_rate": 0.01,
                "learning_adaptive": 0,
@@ -18,5 +18,11 @@
   "num_step": 3,
   "train": 1,
   "discount": 1.0,
-  "baseline_learning_rate":0.0
+  "baseline_learning_rate":0.0,
+  "train_entity_embeddings": true,
+  "train_entity_embeddings": true,
+  "graph_file": "../data/simpsons1_graph.tsv",
+  "query_file": "../data/simpsons1_query.tsv",
+  "entity_embedding_file": "../data/simpsons1_entity_embeddings.tsv",
+  "relation_embedding_file": ""
 }

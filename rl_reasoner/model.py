@@ -10,12 +10,13 @@ def policy_network(observations,
                    embedding_size,
                    mlp_hidden_size,
                    vocab_size,
-                   query_relations):
+                   query_relations,
+                   train_entity_embeddings,
+                   train_relation_embeddings):
     """ define policy neural network """
     with tf.variable_scope("embedding"):
-        entity_embedding = tf.get_variable("entity_embedding", [vocab_size[0], embedding_size], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True)
-        relation_embedding = tf.get_variable("relation_embedding", [vocab_size[1], embedding_size], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True)
-
+        entity_embedding = tf.get_variable("entity_embedding", [vocab_size[0], embedding_size], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=train_entity_embeddings)
+        relation_embedding = tf.get_variable("relation_embedding", [vocab_size[1], embedding_size], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=train_relation_embeddings)
 
     with tf.variable_scope("rnn"):
         def gru_cell():
@@ -43,4 +44,4 @@ def policy_network(observations,
         # dummy_scores = tf.ones_like(prelim_scores) * -99999.0  # the base matrix to choose from if dummy relation
         # logit = tf.where(mask, dummy_scores, prelim_scores) 
     
-    return logit, final_state
+    return logit, final_state, entity_embedding, relation_embedding

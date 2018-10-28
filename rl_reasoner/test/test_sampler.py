@@ -10,13 +10,14 @@ from rl_reasoner.environment import KGEnvironment
 from tensorflow.python import debug as tf_debug
 
 
-testfile = "../data/test_data_1.tsv"
+graph_file = "../data/simpsons1_graph.tsv"
+query_file = "../data/simpsons1_query.tsv"
 tmpdir = "../data/tmp"
 
 config = json.load(open("configuration.json"))
 train = config["train"]
 
-env = KGEnvironment("Lisa", "sister_of", "Bart", testfile)
+env = KGEnvironment(query_file, graph_file)
 observation_dim = env.observation_dim
 
 embedding_size = config["embedding_size"]
