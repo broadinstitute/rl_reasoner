@@ -96,8 +96,8 @@ class PolicyGradientRNN(object):
             self.available_actions = tf.placeholder(tf.int32, (None, None, None, 2), name="available_actions")
             self.query_relations = tf.placeholder(tf.int32, (None, None), name="query_relations")
 
-            self.entity_embedding_placeholder = tf.placeholder(tf.float32, (self.vocab_size, self.embedding_size), name="entity_embedding")
-            self.relation_embedding_placeholder = tf.placeholder(tf.float32, (self.vocab_size, self.embedding_size), name="relation_embedding")
+            self.entity_embedding_placeholder = tf.placeholder(tf.float32, (self.vocab_size[0], self.embedding_size), name="entity_embedding")
+            self.relation_embedding_placeholder = tf.placeholder(tf.float32, (self.vocab_size[1], self.embedding_size), name="relation_embedding")
 
     def create_variables_for_actions(self):
         with tf.name_scope("generating_actions"):
@@ -187,7 +187,7 @@ class PolicyGradientRNN(object):
                                                self.query_relations: query_relations,
                                                self.init_states: init_states,
                                                self.seq_len: seq_len})
-        print(probs[0][0])
+        #print(probs[0][0]) ## print probabilities for actions
         return np.random.choice(len(probs[0][0]), p=probs[0][0]), final_state
 
     def update_parameters(self, observations, available_actions, actions, returns, query_relations, init_states, seq_len):

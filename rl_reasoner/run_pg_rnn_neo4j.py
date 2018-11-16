@@ -1,3 +1,4 @@
+import datetime
 import numpy as np
 import json
 import os
@@ -6,17 +7,31 @@ from tqdm import tqdm
 from pg_rnn import PolicyGradientRNN
 from sampler import Sampler
 from model import policy_network
-from environment import KGEnvironment
+from environment import Neo4jEnvironment
 
 from tensorflow.python import debug as tf_debug
 
-config = json.load(open("configuration.json"))
+config = json.load(open("configuration_kg1.json"))
 train = config["train"]
 
-graph_file = config["graph_file"]
 query_file = config["query_file"]
 
-env = KGEnvironment(query_file, graph_file)
+
+# read embeddings
+entity_embeddings = None
+if config['entity_embedding_file'] != '':
+    with open(config['entity_embedding_file']) as f:
+        entity_embeddings = np.loadtxt(f, skiprows=1)
+        entities = entity_embeddings[:,0].astype(int).tolist()
+        entity_embeddings = np.delete(entity_embeddings, [0], axis=1)
+
+relation_embeddings = None
+if config['relation_embedding_file'] != '':
+    with open(config['relation_embedding_file']) as f:
+        relation_embeddings = np.loadtxt(f)
+
+
+env = Neo4jEnvironment(query_file, entities)
 observation_dim = env.observation_dim
 
 embedding_size = config["embedding_size"]
@@ -35,24 +50,16 @@ if learning_adaptive:
 else:
     learning_rate = config["learning"]["learning_rate"]
 
-# read embeddings
-entity_embeddings = None
-if config['entity_embedding_file'] != '':
-    with open(config['entity_embedding_file']) as f:
-        entity_embeddings = np.loadtxt(f)
 
-relation_embeddings = None
-if config['relation_embedding_file'] != '':
-    with open(config['relation_embedding_file']) as f:
-        relation_embeddings = np.loadtxt(f)
 
 # tensorflow
 sess = tf.Session()
 optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 
 # checkpointing
-base_folder = "_".join([k + "-" + str(v) for k, v in sorted(config.items())
-                                    if k not in ["train", "learning"]])
+#base_folder = "_".join([k + "-" + str(v) for k, v in sorted(config.items())
+#                                    if k not in ["train", "learning"]])
+base_folder = "results/" + str(datetime.datetime.now()).replace(" ", "_").replace(":", "-")
 os.makedirs(base_folder, exist_ok=True)
 json.dump(config, open(base_folder + "/configuration.json", "w"))
 writer = tf.summary.FileWriter(base_folder + "/summary/")
@@ -64,7 +71,7 @@ pg_rnn = PolicyGradientRNN(sess,
                            policy_network,
                            observation_dim,
                            embedding_size,
-                           (len(env.entities), len(env.relations)),
+                           (env.num_entities, env.num_relations),
                            entity_embeddings,
                            relation_embeddings,
                            config["train_entity_embeddings"],
@@ -73,7 +80,7 @@ pg_rnn = PolicyGradientRNN(sess,
                            config["gru_unit_size"],
                            config["num_step"],
                            config["num_layers"],
-                           save_path + env.spec.id,
+                           save_path + env.spec["id"],
                            global_step,
                            config["max_gradient_norm"],
                            config["entropy_bonus"],
@@ -95,7 +102,7 @@ reward = []
 for _ in tqdm(range(config["num_itr"])):
     if train:
         batch = sampler.samples()
-        print(batch["query_relations"])
+        #print(batch["query_relations"])
         pg_rnn.update_parameters(batch["observations"],
                                  batch["available_actions"],
                                  batch["actions"],
