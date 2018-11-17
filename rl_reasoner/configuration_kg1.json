@@ -19,8 +19,8 @@
   "train": 1,
   "discount": 1.0,
   "baseline_learning_rate":0.0,
-  "train_entity_embeddings": false,
-  "train_relation_embeddings": false,
+  "train_entity_embeddings": true,
+  "train_relation_embeddings": true,
   "query_file": "../data/drug_hasIndication_disease_1_query.tsv",
   "entity_embedding_file": "../data/drug_hasIndication_disease_1_entity_embeddings.tsv",
   "relation_embedding_file": ""
