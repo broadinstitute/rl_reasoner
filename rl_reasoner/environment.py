@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import networkx as nx
 import csv
 from reasoner.knowledge_graph.KnowledgeGraph import KnowledgeGraph
@@ -41,11 +42,9 @@ class KGEnvironment():
         return self.next_actions
 
     def reset(self):
-        entity_idx = np.random.randint(0, len(self.queries))
-        relation_idx = np.random.randint(0, len(self.queries[entity_idx]))
-        self.query_entity = self.queries.keys()[entity_idx]
-        self.query_relation = self.queries[entity_idx].keys()[relation_idx]
-        self.targets = self.queries[entity_idx][relation_idx]
+        self.query_entity = random.choice(list(self.queries.keys()))
+        self.query_relation = random.choice(list(self.queries[self.query_entity].keys()))
+        self.targets = self.queries[self.query_entity][self.query_relation]
 
         self.target_found = False
         self.current_relation = self.relations['DUMMY_RELATION']
@@ -188,11 +187,11 @@ class Neo4jEnvironment(KGEnvironment):
         out_neighbors = self.graph.get_out_neighbors(self.entity_list[self.current_entity])
         
         if self.current_entity == self.query_entity:
-            next_actions = [(self.relations[n['predicate']], self.entities[n['node_id']]) for n in out_neighbors if self.relations[n['predicate']] != self.query_relation and self.entities[n['node_id']] != self.target]
+            next_actions = [(self.relations[n['predicate']], self.entities[n['node_id']]) for n in out_neighbors if self.relations[n['predicate']] != self.query_relation and self.entities[n['node_id']] not in self.targets]
         else:
             next_actions = [(self.relations[n['predicate']], self.entities[n['node_id']]) for n in out_neighbors]
         next_actions.append((self.relations['NO_OP'], self.current_entity)) # add NO-OP
-        print(self.current_entity, self.query_entity, self.query_relation, self.target)
+        print(self.current_entity, self.query_entity, self.query_relation, self.targets)
         #print(next_actions)
         return next_actions
 
