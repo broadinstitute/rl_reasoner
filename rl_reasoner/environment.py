@@ -110,7 +110,7 @@ class NxEnvironment(KGEnvironment):
                     queries[query_entity] = dict()
                 if query_relation not in queries[query_entity]:
                     queries[query_entity][query_relation] = list()
-                queries[query_entity][query_relation].add(query_target)
+                queries[query_entity][query_relation].append(query_target)
         return queries
 
     def step(self, action_idx):
@@ -162,7 +162,7 @@ class Neo4jEnvironment(KGEnvironment):
                     queries[query_entity] = dict()
                 if query_relation not in queries[query_entity]:
                     queries[query_entity][query_relation] = list()
-                queries[query_entity][query_relation].add(query_target)
+                queries[query_entity][query_relation].append(query_target)
         return queries
 
     def step(self, action_idx):
