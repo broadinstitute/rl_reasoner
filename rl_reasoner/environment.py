@@ -41,10 +41,11 @@ class KGEnvironment():
         return self.next_actions
 
     def reset(self):
-        query_idx = np.random.randint(0, len(self.queries))
-        self.query_entity = self.queries[query_idx][0]
-        self.query_relation = self.queries[query_idx][1]
-        self.target = self.queries[query_idx][2]
+        entity_idx = np.random.randint(0, len(self.queries))
+        relation_idx = np.random.randint(0, len(self.queries[entity_idx]))
+        self.query_entity = self.queries.keys()[entity_idx]
+        self.query_relation = self.queries[entity_idx].keys()[relation_idx]
+        self.targets = self.queries[entity_idx][relation_idx]
 
         self.target_found = False
         self.current_relation = self.relations['DUMMY_RELATION']
@@ -105,7 +106,11 @@ class NxEnvironment(KGEnvironment):
                 query_entity = self.entities[line[0]]
                 query_relation = self.relations[line[1]]
                 query_target = self.entities[line[2]]
-                queries.append([query_entity, query_relation, query_target])
+                if query_entity not in queries:
+                    queries[query_entity] = dict()
+                if query_relation not in queries[query_entity]:
+                    queries[query_entity][query_relation] = list()
+                queries[query_entity][query_relation].add(query_target)
         return queries
 
     def step(self, action_idx):
@@ -120,7 +125,7 @@ class NxEnvironment(KGEnvironment):
         if self.target_found:
             return np.array(self.get_state()), np.array(self.get_available_actions()), 0, True, {}
         else:
-            if self.current_entity == self.target:
+            if self.current_entity in self.targets:
                 self.target_found = True
                 return np.array(self.get_state()), np.array(self.get_available_actions()), 1, True, {}
             else:
@@ -147,13 +152,17 @@ class Neo4jEnvironment(KGEnvironment):
 
     def read_queries(self, query_file):
         with open(query_file) as f:
-            queries = list()
+            queries = dict()
             csv_file = csv.reader(f, delimiter='\t')
             for line in csv_file:
                 query_entity = self.entities[int(line[0])]
                 query_relation = self.relations[line[1]]
                 query_target = self.entities[int(line[2])]
-                queries.append([query_entity, query_relation, query_target])
+                if query_entity not in queries:
+                    queries[query_entity] = dict()
+                if query_relation not in queries[query_entity]:
+                    queries[query_entity][query_relation] = list()
+                queries[query_entity][query_relation].add(query_target)
         return queries
 
     def step(self, action_idx):
@@ -169,7 +178,7 @@ class Neo4jEnvironment(KGEnvironment):
         if self.target_found:
             return np.array(self.get_state()), np.array(self.get_available_actions()), 0, True, {}
         else:
-            if self.current_entity == self.target:
+            if self.current_entity in self.targets:
                 self.target_found = True
                 return np.array(self.get_state()), np.array(self.get_available_actions()), 1, True, {}
             else:
