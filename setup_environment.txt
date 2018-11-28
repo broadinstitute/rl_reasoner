@@ -1,0 +1,6 @@
+conda create -n rl_reasoner python=3.6 tensorflow yaml networkx pip
+pip install neo4j
+pip install -e ./rl_reasoner
+pip install -e ./reasoner
+pip install tqdm
+pip install PyYAML
