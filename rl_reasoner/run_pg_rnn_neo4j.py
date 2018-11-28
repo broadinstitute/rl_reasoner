@@ -116,8 +116,8 @@ for _ in tqdm(range(config["num_itr"])):
 
 #episode = sampler.collect_one_episode()
 episode = sampler.samples()
-print(episode["observations"])
-print(episode["returns"])
+# print(episode["observations"])
+# print(episode["returns"])
 with open(base_folder + "/summary.txt", "w") as f:
     for i in range(episode["observations"].shape[0]):
         for j in range(episode["observations"].shape[1]):
