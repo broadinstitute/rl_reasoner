@@ -78,7 +78,7 @@ class Sampler(object):
         while len_samples < self.batch_size:
             episode = self.collect_one_episode()
             episodes.append(episode)
-            len_samples += np.sum(episode["seq_len"])
+            len_samples += 1 #np.sum(episode["seq_len"]) ## changed so each episode is counted once (rather than each step)!
         # prepare input
         observations = np.concatenate([episode["observations"] for episode in episodes])
         available_actions = np.concatenate(self.expand_available_actions([episode["available_actions"] for episode in episodes], axis=2))

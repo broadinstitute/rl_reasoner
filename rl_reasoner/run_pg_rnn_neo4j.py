@@ -112,4 +112,22 @@ for _ in tqdm(range(config["num_itr"])):
                                  batch["seq_len"])
     else:
         episode = sampler.collect_one_episode()
-        print("reward is {0}".format(np.sum(episode["rewards"])))
+        print("reward is {0}".format(np.sum(episode["returns"])))
+
+#episode = sampler.collect_one_episode()
+episode = sampler.samples()
+print(episode["observations"])
+print(episode["returns"])
+with open(base_folder + "/summary.txt", "w") as f:
+    for i in range(episode["observations"].shape[0]):
+        for j in range(episode["observations"].shape[1]):
+            rel = env.relation_list[int(episode["observations"][i,j,0])]
+            ent_id = env.entity_list[int(episode["observations"][i,j,1])]
+            ent = [record['node']['name'] for record in env.graph.get_node_by_id(ent_id)][0]
+            f.write('[' + rel + ']-')
+            f.write('(' + ent + ', id=' + str(ent_id) + ')')
+            if j == episode["observations"].shape[1]-1:
+                f.write(', ')
+            else:
+                f.write('-')
+        f.write("{0}\n".format(np.sum(episode["returns"][i])))

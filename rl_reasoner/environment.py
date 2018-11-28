@@ -142,10 +142,10 @@ class Neo4jEnvironment(KGEnvironment):
         #num_entities = graph.get_num_nodes()
         self.entity_list = entities
         self.entities = {item:idx for idx,item in enumerate(entities)}
-        predicates = [record["predicate"] for record in graph.get_predicates()]
-        self.relations = {item:idx for idx,item in enumerate(['NO_OP', 'DUMMY_RELATION'] + predicates)}
+        self.relation_list = ['NO_OP', 'DUMMY_RELATION'] + [record["predicate"] for record in graph.get_predicates()]
+        self.relations = {item:idx for idx,item in enumerate(self.relation_list)}
         queries = self.read_queries(query_file)
-        print(queries)
+        #print(queries)
         spec = {"id": "neoenv"}
         super().__init__(graph, len(self.entities), len(self.relations), queries, spec)
 
@@ -191,7 +191,7 @@ class Neo4jEnvironment(KGEnvironment):
         else:
             next_actions = [(self.relations[n['predicate']], self.entities[n['node_id']]) for n in out_neighbors]
         next_actions.append((self.relations['NO_OP'], self.current_entity)) # add NO-OP
-        print(self.current_entity, self.query_entity, self.query_relation, self.targets)
+        #print(self.current_entity, self.query_entity, self.query_relation, self.targets)
         #print(next_actions)
         return next_actions
 
