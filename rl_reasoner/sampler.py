@@ -69,7 +69,8 @@ class Sampler(object):
                     actions = np.array(actions),
                     returns = np.array(returns),
                     init_states = init_states,
-                    query_relations = np.repeat(query_relation,len(actions)))
+                    query_relations = np.repeat(query_relation,len(actions)),
+                    rewards = np.array(rewards))
         return self.expand_episode(episode)
 
     def collect_one_batch(self):
@@ -83,6 +84,7 @@ class Sampler(object):
         observations = np.concatenate([episode["observations"] for episode in episodes])
         available_actions = np.concatenate(self.expand_available_actions([episode["available_actions"] for episode in episodes], axis=2))
         actions = np.concatenate([episode["actions"] for episode in episodes])
+        rewards = np.concatenate([episode["rewards"] for episode in episodes])
         returns = np.concatenate([episode["returns"] for episode in episodes])
         returns = (returns - np.mean(returns)) / (np.std(returns) + 1e-8)  # moved here following MINERVA
         init_states = tuple(
@@ -98,7 +100,8 @@ class Sampler(object):
                     returns = returns,
                     init_states = init_states,
                     seq_len = seq_len,
-                    query_relations = query_relations
+                    query_relations = query_relations,
+                    rewards = rewards
                     )
         return batch
 
