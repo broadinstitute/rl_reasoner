@@ -92,12 +92,12 @@ sampler = Sampler(pg_rnn,
                   writer)
 
 reward = []
-for _ in tqdm(range(config["num_itr"])):
-    episode = sampler.collect_one_episode()
-    print("reward is {0}".format(np.sum(episode["rewards"])))
+
+episode = sampler.collect_one_episode()
+print("reward is {0}".format(np.sum(episode["rewards"])))
 
 #episode = sampler.collect_one_episode()
-episode = sampler.samples()
+#episode = sampler.samples()
 # print(episode["actions"])
 # print(episode["rewards"])
 with open(base_folder + "/query_results.txt", "w") as f:
