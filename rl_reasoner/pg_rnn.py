@@ -191,7 +191,6 @@ class PolicyGradientRNN(object):
         return np.random.choice(len(probs[0][0]), p=probs[0][0]), final_state
 
     def update_parameters(self, observations, available_actions, actions, returns, query_relations, init_states, seq_len):
-        write_summary = self.train_itr % self.summary_every == 0
         _, summary = self.session.run([self.train_op,
                                        self.summarize if write_summary else self.no_op],
                                       {self.observations: observations,
@@ -202,6 +201,7 @@ class PolicyGradientRNN(object):
                                        self.init_states: init_states,
                                        self.seq_len: seq_len})
 
+        write_summary = self.train_itr % self.summary_every == 0
         if write_summary:
             self.summary_writer.add_summary(summary, self.train_itr)
             self.saver.save(self.session, self.save_path, global_step=self.global_step)
