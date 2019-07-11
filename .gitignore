@@ -103,3 +103,4 @@ ENV/
 .DS_Store
 data/
 *.sublime-workspace
+rl_reasoner/results/
