@@ -12,8 +12,8 @@ from environment import Neo4jEnvironment
 from tensorflow.python import debug as tf_debug
 
 config = json.load(open("configuration_kg2.json"))
-train = config["train"]
 
+train = config["train"]
 query_file = config["query_file"]
 
 
@@ -59,7 +59,11 @@ optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 # checkpointing
 #base_folder = "_".join([k + "-" + str(v) for k, v in sorted(config.items())
 #                                    if k not in ["train", "learning"]])
-base_folder = "results/" + str(datetime.datetime.now()).replace(" ", "_").replace(":", "-")
+if 'outfolder' in config and config['outfolder'] != '':
+    base_folder = "results/" + outfolder
+else:
+    base_folder = "results/" + str(datetime.datetime.now()).replace(" ", "_").replace(":", "-")
+
 os.makedirs(base_folder, exist_ok=True)
 json.dump(config, open(base_folder + "/configuration.json", "w"))
 writer = tf.summary.FileWriter(base_folder + "/summary/")
