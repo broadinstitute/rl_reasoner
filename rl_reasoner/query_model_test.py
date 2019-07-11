@@ -27,6 +27,10 @@ if config['entity_embedding_file'] != '':
         entities = entity_embeddings[:,0].astype(int).tolist()
         entity_embeddings = np.delete(entity_embeddings, [0], axis=1)
 
+relation_embeddings = None
+if config['relation_embedding_file'] != '':
+    with open(config['relation_embedding_file']) as f:
+        relation_embeddings = np.loadtxt(f)
 
 env = Neo4jEnvironment(query_file, entities)
 observation_dim = env.observation_dim
