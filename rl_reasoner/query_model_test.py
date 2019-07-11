@@ -56,6 +56,7 @@ else:
 sess = tf.Session()
 optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 
+writer = tf.summary.FileWriter(base_folder + "/summary/")
 save_path = base_folder + '/models/'
 
 pg_rnn = PolicyGradientRNN(sess,
@@ -76,7 +77,7 @@ pg_rnn = PolicyGradientRNN(sess,
                            global_step,
                            config["max_gradient_norm"],
                            config["entropy_bonus"],
-                           None,
+                           writer,
                            loss_function=config["loss_function"],
                            summary_every=10)
 
@@ -88,7 +89,7 @@ sampler = Sampler(pg_rnn,
                   config["max_step"],
                   config["batch_size"],
                   config["discount"],
-                  None)
+                  writer)
 
 reward = []
 for _ in tqdm(range(config["num_itr"])):
