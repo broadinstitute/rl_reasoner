@@ -56,7 +56,7 @@ else:
 sess = tf.Session()
 optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 
-writer = tf.summary.FileWriter(base_folder + "/summary/")
+writer = tf.summary.FileWriter(base_folder + "/query_summary/")
 save_path = base_folder + '/models/'
 
 pg_rnn = PolicyGradientRNN(sess,
