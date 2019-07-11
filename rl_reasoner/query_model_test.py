@@ -12,9 +12,9 @@ from environment import Neo4jEnvironment
 from tensorflow.python import debug as tf_debug
 
 
-query_file = "../data/drug_hasIndication_disease_3_query.txt"
+query_file = "../data/drug_hasIndication_disease_all.txt"
 base_folder = "results/" + "2018-11-29_13-40-12.074766"
-num_itr = 10
+num_itr = 20
 
 config = json.load(open(base_folder + "/configuration.json"))
 train = 0
@@ -102,7 +102,7 @@ for i in tqdm(range(num_itr)):
     # print(episode["actions"])
     # print(episode["rewards"])
     with open(base_folder + "/query_results.txt", "a") as f:
-        f.write("iteration" + str(i) + "\n")
+        f.write("iteration " + str(i) + "\n")
         for i in range(episode["actions"].shape[0]):
             ent_id = env.entity_list[int(episode["observations"][i,0,1])]
             ent = [record['node']['name'] for record in env.graph.get_node_by_id(ent_id)][0]
