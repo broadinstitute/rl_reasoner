@@ -56,6 +56,7 @@ else:
 sess = tf.Session()
 optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 
+save_path = base_folder + '/models/'
 
 pg_rnn = PolicyGradientRNN(sess,
                            optimizer,
