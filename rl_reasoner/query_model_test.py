@@ -15,7 +15,7 @@ from tensorflow.python import debug as tf_debug
 query_file = "../data/drug_hasIndication_disease_3_query.txt"
 base_folder = "results/" + "2018-11-29_13-40-12.074766"
 
-config = json.load(open(base_folder + "configuration.json"))
+config = json.load(open(base_folder + "/configuration.json"))
 train = 0
 
 
