@@ -179,13 +179,13 @@ class Neo4jEnvironment(KGEnvironment):
 
         if self.target_found:
             if done:
-                return np.array(self.get_state()), np.array(self.get_available_actions()), 10, True, {}
+                return np.array(self.get_state()), np.array(self.get_available_actions()), 1, True, {}
             else:
                 return np.array(self.get_state()), np.array(self.get_available_actions()), 0, False, {}
         else:
             if self.current_entity in self.targets:
                 self.target_found = True
-                return np.array(self.get_state()), np.array(self.get_available_actions()), 1, False, {}
+                return np.array(self.get_state()), np.array(self.get_available_actions()), 2, False, {}
             else:
                 return np.array(self.get_state()), np.array(self.get_available_actions()), 0, False, {}
 
