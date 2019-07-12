@@ -170,7 +170,7 @@ class Neo4jEnvironment(KGEnvironment):
         
         self.current_relation = action[0]
         if action[0] == self.relations['NO_OP']:
-            # do nothing
+            pass # do nothing
         elif action[0] == self.relations['DONE']:
             done = True
         else:
