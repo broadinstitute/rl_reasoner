@@ -13,7 +13,7 @@
   "loss_function": "cross_entropy",
   "max_gradient_norm": 5.0,
   "max_step": 3,
-  "num_itr": 20000,
+  "num_itr": 2000,
   "num_layers": 1,
   "num_step": 3,
   "train": 1,
