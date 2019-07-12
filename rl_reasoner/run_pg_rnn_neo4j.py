@@ -11,7 +11,7 @@ from environment import Neo4jEnvironment
 
 from tensorflow.python import debug as tf_debug
 
-config = json.load(open("config/configuration_kg2.json"))
+config = json.load(open("config/configuration_kg3.json"))
 
 train = config["train"]
 query_file = config["query_file"]
