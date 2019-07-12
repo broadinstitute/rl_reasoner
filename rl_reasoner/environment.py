@@ -142,7 +142,7 @@ class Neo4jEnvironment(KGEnvironment):
         #num_entities = graph.get_num_nodes()
         self.entity_list = entities
         self.entities = {item:idx for idx,item in enumerate(entities)}
-        self.relation_list = ['NO_OP', 'DUMMY_RELATION'] + [record["predicate"] for record in graph.get_predicates()]
+        self.relation_list = ['NO_OP', 'DUMMY_RELATION', 'DONE'] + [record["predicate"] for record in graph.get_predicates()]
         self.relations = {item:idx for idx,item in enumerate(self.relation_list)}
         queries = self.read_queries(query_file)
         #print(queries)
@@ -165,23 +165,29 @@ class Neo4jEnvironment(KGEnvironment):
         return queries
 
     def step(self, action_idx):
+        done = False
         action = self.next_actions[action_idx]
+        
+        self.current_relation = action[0]
         if action[0] == self.relations['NO_OP']:
-            self.current_relation = action[0]
-        #elif self.graph.has_edge(start=self.current_entity, end=action[1], predicate=action[0]):
+            # do nothing
+        elif action[0] == self.relations['DONE']:
+            done = True
         else:
-            self.current_relation = action[0]
             self.current_entity = action[1]
             self.next_actions = self.generate_next_actions()
 
         if self.target_found:
-            return np.array(self.get_state()), np.array(self.get_available_actions()), 0, True, {}
+            if done:
+                return np.array(self.get_state()), np.array(self.get_available_actions()), 10, True, {}
+            else:
+                return np.array(self.get_state()), np.array(self.get_available_actions()), -1, False, {}
         else:
             if self.current_entity in self.targets:
                 self.target_found = True
-                return np.array(self.get_state()), np.array(self.get_available_actions()), 1, True, {}
+                return np.array(self.get_state()), np.array(self.get_available_actions()), 1, False, {}
             else:
-                return np.array(self.get_state()), np.array(self.get_available_actions()), 0, False, {}
+                return np.array(self.get_state()), np.array(self.get_available_actions()), -0.1, False, {}
 
     def generate_next_actions(self):
         out_neighbors = self.graph.get_out_neighbors(self.entity_list[self.current_entity])
@@ -191,6 +197,7 @@ class Neo4jEnvironment(KGEnvironment):
         else:
             next_actions = [(self.relations[n['predicate']], self.entities[n['node_id']]) for n in out_neighbors]
         next_actions.append((self.relations['NO_OP'], self.current_entity)) # add NO-OP
+        next_actions.append((self.relations['DONE'], self.current_entity)) # add DONE
         #print(self.current_entity, self.query_entity, self.query_relation, self.targets)
         #print(next_actions)
         return next_actions
