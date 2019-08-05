@@ -30,7 +30,7 @@ def read_queries(self, query_file):
 
 def main(query_entity, query_relation):
   query_file = "../data/drug_hasIndication_disease_all.txt"
-  base_folder = "results/" + "2018-11-29_13-40-12.074766"
+  base_folder = "results/" + "2019-07-12_13-26-35.576782"
   num_itr = 20
 
   config = json.load(open(base_folder + "/configuration.json"))
