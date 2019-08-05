@@ -37,7 +37,7 @@ class Sampler(object):
     def compute_monte_carlo_returns(self, rewards):
         return scipy.signal.lfilter([1.], [1, -self.discount], rewards[::-1])[::-1]
 
-    def collect_one_episode(self, query_entity=None, query_relation=None, targets=None):
+    def collect_one_episode(self, query_entity=None, query_relation=None, targets=[]):
         observations, available_actions, actions, rewards = [], [], [], []
         init_states = tuple([] for _ in range(self.num_layers))
 
