@@ -1,5 +1,4 @@
 import numpy as np
-import random
 import networkx as nx
 import csv
 from reasoner.knowledge_graph.KnowledgeGraph import KnowledgeGraph
