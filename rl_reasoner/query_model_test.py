@@ -112,6 +112,9 @@ def main(query_entity, query_relation):
 
   reward = []
 
+  print(os.getwcd())
+  print(save_path + env.spec["id"])
+
   episode = sampler.collect_one_episode(query_entity = query_entity, query_relation = query_relation)
   for i in range(episode["actions"].shape[0]):
     ent_id = env.entity_list[int(episode["observations"][i,0,1])]
