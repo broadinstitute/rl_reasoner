@@ -112,25 +112,40 @@ def main(query_entity, query_relation):
 
   reward = []
 
-  for i in tqdm(range(num_itr)):
-      episode = sampler.collect_one_episode(query_entity = query_entity, query_relation = query_relation)
-      print("reward is {0}".format(np.sum(episode["rewards"])))
+  episode = sampler.collect_one_episode(query_entity = query_entity, query_relation = query_relation)
+  for i in range(episode["actions"].shape[0]):
+    ent_id = env.entity_list[int(episode["observations"][i,0,1])]
+    ent = [record['node']['name'] for record in env.graph.get_node_by_id(ent_id)][0]
+    print('(' + ent + ', id=' + str(ent_id) + ')', end = '')
+    for j in range(episode["actions"].shape[1]):
+        rel = env.relation_list[int(episode["available_actions"][i,j,int(episode["actions"][i,j])][0])]
+        ent_id = env.entity_list[int(episode["available_actions"][i,j,int(episode["actions"][i,j])][1])]
+        ent = [record['node']['name'] for record in env.graph.get_node_by_id(ent_id)][0]
+        print('-[' + rel + ']-', end = '')
+        print('(' + ent + ', id=' + str(ent_id) + ')', end = '')
+        if j == episode["actions"].shape[1]-1:
+            print(', ', end = '')
+    print("{0}\n".format(np.sum(episode["rewards"][i])), end = '')
 
-      with open(base_folder + "/query_results.txt", "a") as f:
-          f.write("iteration " + str(i) + "\n")
-          for i in range(episode["actions"].shape[0]):
-              ent_id = env.entity_list[int(episode["observations"][i,0,1])]
-              ent = [record['node']['name'] for record in env.graph.get_node_by_id(ent_id)][0]
-              f.write('(' + ent + ', id=' + str(ent_id) + ')')
-              for j in range(episode["actions"].shape[1]):
-                  rel = env.relation_list[int(episode["available_actions"][i,j,int(episode["actions"][i,j])][0])]
-                  ent_id = env.entity_list[int(episode["available_actions"][i,j,int(episode["actions"][i,j])][1])]
-                  ent = [record['node']['name'] for record in env.graph.get_node_by_id(ent_id)][0]
-                  f.write('-[' + rel + ']-')
-                  f.write('(' + ent + ', id=' + str(ent_id) + ')')
-                  if j == episode["actions"].shape[1]-1:
-                      f.write(', ')
-              f.write("{0}\n".format(np.sum(episode["rewards"][i])))
+  # for i in tqdm(range(num_itr)):
+  #     episode = sampler.collect_one_episode(query_entity = query_entity, query_relation = query_relation)
+  #     print("reward is {0}".format(np.sum(episode["rewards"])))
+
+  #     with open(base_folder + "/query_results.txt", "a") as f:
+  #         f.write("iteration " + str(i) + "\n")
+  #         for i in range(episode["actions"].shape[0]):
+  #             ent_id = env.entity_list[int(episode["observations"][i,0,1])]
+  #             ent = [record['node']['name'] for record in env.graph.get_node_by_id(ent_id)][0]
+  #             f.write('(' + ent + ', id=' + str(ent_id) + ')')
+  #             for j in range(episode["actions"].shape[1]):
+  #                 rel = env.relation_list[int(episode["available_actions"][i,j,int(episode["actions"][i,j])][0])]
+  #                 ent_id = env.entity_list[int(episode["available_actions"][i,j,int(episode["actions"][i,j])][1])]
+  #                 ent = [record['node']['name'] for record in env.graph.get_node_by_id(ent_id)][0]
+  #                 f.write('-[' + rel + ']-')
+  #                 f.write('(' + ent + ', id=' + str(ent_id) + ')')
+  #                 if j == episode["actions"].shape[1]-1:
+  #                     f.write(', ')
+  #             f.write("{0}\n".format(np.sum(episode["rewards"][i])))
 
 if __name__ == '__main__':
   main(185855, "HAS_INDICATION")
