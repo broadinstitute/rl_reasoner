@@ -10,18 +10,21 @@ class KGEnvironment():
                  graph,
                  num_entities,
                  num_relations,
-                 queries,
                  spec):
 
         self.graph = graph
         self.num_entities = num_entities
         self.num_relations = num_relations
 
-        self.queries = queries
         self.observation_dim = (2,)
         self.spec = spec
         self.target_found = False
-        self.reset()
+        
+        self.query_entity = None
+        self.query_relation = None
+        self.targets = None
+
+        # self.reset()
 
     def get_num_entities(self):
         return self.num_entities 
@@ -41,10 +44,10 @@ class KGEnvironment():
     def get_available_actions(self):
         return self.next_actions
 
-    def reset(self):
-        self.query_entity = random.choice(list(self.queries.keys()))
-        self.query_relation = random.choice(list(self.queries[self.query_entity].keys()))
-        self.targets = self.queries[self.query_entity][self.query_relation]
+    def reset(self, query_entity, query_relation, targets):
+        self.query_entity = self.entities[query_entity]
+        self.query_relation = self.relations[query_relation]
+        self.targets = [self.entities[t] for t in targets]
 
         self.target_found = False
         self.current_relation = self.relations['DUMMY_RELATION']
@@ -53,116 +56,81 @@ class KGEnvironment():
         return np.array(self.get_state()), np.array(self.get_available_actions()), self.query_relation
 
 
+# class NxEnvironment(KGEnvironment):
+#     def __init__(self, graph_file):
+#         graph, self.entities, self.relations = self.from_csv(graph_file)
+#         spec = {"id": "nxenv"}
+#         super().__init__(graph, len(self.entities), len(self.relations), spec)
 
+#     def from_csv(self, graph_file):
+#         graph = nx.MultiDiGraph()
+#         entities = {}
+#         relations = {'NO_OP':0, 'DUMMY_RELATION':1}
+#         with open(graph_file) as f:
+#             csv_file = csv.reader(f, delimiter='\t')
+#             entity_counter = len(entities)
+#             relation_counter = len(relations)
+#             for line in csv_file:
+#                 if line[0] in entities:
+#                     start = entities[line[0]]
+#                 else:
+#                     entities[line[0]] = entity_counter
+#                     start = entity_counter
+#                     entity_counter = entity_counter + 1
 
-class NxEnvironment(KGEnvironment):
-    def __init__(self, graph_file, query_file):
-        graph, self.entities, self.relations = self.from_csv(graph_file)
-        queries = self.read_queries(query_file)
-        spec = {"id": "nxenv"}
-        super().__init__(graph, len(self.entities), len(self.relations), queries, spec)
+#                 if line[2] in entities:
+#                     end = entities[line[2]]
+#                 else:
+#                     entities[line[2]] = entity_counter
+#                     end = entity_counter
+#                     entity_counter = entity_counter + 1
 
-    def from_csv(self, graph_file):
-        graph = nx.MultiDiGraph()
-        entities = {}
-        relations = {'NO_OP':0, 'DUMMY_RELATION':1}
-        with open(graph_file) as f:
-            csv_file = csv.reader(f, delimiter='\t')
-            entity_counter = len(entities)
-            relation_counter = len(relations)
-            for line in csv_file:
-                if line[0] in entities:
-                    start = entities[line[0]]
-                else:
-                    entities[line[0]] = entity_counter
-                    start = entity_counter
-                    entity_counter = entity_counter + 1
+#                 if line[1] in relations:
+#                     relation = relations[line[1]]
+#                 else:
+#                     relations[line[1]] = relation_counter
+#                     relation = relation_counter
+#                     relation_counter = relation_counter + 1
 
-                if line[2] in entities:
-                    end = entities[line[2]]
-                else:
-                    entities[line[2]] = entity_counter
-                    end = entity_counter
-                    entity_counter = entity_counter + 1
+#                 graph.add_node(start)
+#                 graph.add_node(end)
+#                 graph.add_edge(start, end, key=relation)
+#         return graph, entities, relations
 
-                if line[1] in relations:
-                    relation = relations[line[1]]
-                else:
-                    relations[line[1]] = relation_counter
-                    relation = relation_counter
-                    relation_counter = relation_counter + 1
+#     def step(self, action_idx):
+#         action = self.next_actions[action_idx]
+#         if action[0] == self.relations['NO_OP']:
+#             self.current_relation = action[0]
+#         elif self.graph.has_edge(self.current_entity, action[1], key=action[0]):
+#             self.current_relation = action[0]
+#             self.current_entity = action[1]
+#             self.next_actions = self.generate_next_actions()
 
-                graph.add_node(start)
-                graph.add_node(end)
-                graph.add_edge(start, end, key=relation)
-        return graph, entities, relations
+#         if self.target_found:
+#             return np.array(self.get_state()), np.array(self.get_available_actions()), 0, True, {}
+#         else:
+#             if self.current_entity in self.targets:
+#                 self.target_found = True
+#                 return np.array(self.get_state()), np.array(self.get_available_actions()), 1, True, {}
+#             else:
+#                 return np.array(self.get_state()), np.array(self.get_available_actions()), 0, False, {}
 
-    def read_queries(self, query_file):
-        with open(query_file) as f:
-            queries = list()
-            csv_file = csv.reader(f, delimiter='\t')
-            for line in csv_file:
-                query_entity = self.entities[line[0]]
-                query_relation = self.relations[line[1]]
-                query_target = self.entities[line[2]]
-                if query_entity not in queries:
-                    queries[query_entity] = dict()
-                if query_relation not in queries[query_entity]:
-                    queries[query_entity][query_relation] = list()
-                queries[query_entity][query_relation].append(query_target)
-        return queries
-
-    def step(self, action_idx):
-        action = self.next_actions[action_idx]
-        if action[0] == self.relations['NO_OP']:
-            self.current_relation = action[0]
-        elif self.graph.has_edge(self.current_entity, action[1], key=action[0]):
-            self.current_relation = action[0]
-            self.current_entity = action[1]
-            self.next_actions = self.generate_next_actions()
-
-        if self.target_found:
-            return np.array(self.get_state()), np.array(self.get_available_actions()), 0, True, {}
-        else:
-            if self.current_entity in self.targets:
-                self.target_found = True
-                return np.array(self.get_state()), np.array(self.get_available_actions()), 1, True, {}
-            else:
-                return np.array(self.get_state()), np.array(self.get_available_actions()), 0, False, {}
-
-    def generate_next_actions(self):
-        next_actions = [(e[2],e[1]) for e in self.graph.edges(self.current_entity, keys=True)]
-        next_actions.append((self.relations['NO_OP'], self.current_entity)) # add NO-OP
-        return next_actions
+#     def generate_next_actions(self):
+#         next_actions = [(e[2],e[1]) for e in self.graph.edges(self.current_entity, keys=True)]
+#         next_actions.append((self.relations['NO_OP'], self.current_entity)) # add NO-OP
+#         return next_actions
 
 
 class Neo4jEnvironment(KGEnvironment):
-    def __init__(self, query_file, entities):
+    def __init__(self, entities):
         graph = KnowledgeGraph()
         #num_entities = graph.get_num_nodes()
         self.entity_list = entities
         self.entities = {item:idx for idx,item in enumerate(entities)}
         self.relation_list = ['NO_OP', 'DUMMY_RELATION', 'DONE'] + [record["predicate"] for record in graph.get_predicates()]
         self.relations = {item:idx for idx,item in enumerate(self.relation_list)}
-        queries = self.read_queries(query_file)
-        #print(queries)
         spec = {"id": "neoenv"}
-        super().__init__(graph, len(self.entities), len(self.relations), queries, spec)
-
-    def read_queries(self, query_file):
-        with open(query_file) as f:
-            queries = dict()
-            csv_file = csv.reader(f, delimiter='\t')
-            for line in csv_file:
-                query_entity = self.entities[int(line[0])]
-                query_relation = self.relations[line[1]]
-                query_target = self.entities[int(line[2])]
-                if query_entity not in queries:
-                    queries[query_entity] = dict()
-                if query_relation not in queries[query_entity]:
-                    queries[query_entity][query_relation] = list()
-                queries[query_entity][query_relation].append(query_target)
-        return queries
+        super().__init__(graph, len(self.entities), len(self.relations), spec)
 
     def step(self, action_idx):
         done = False
