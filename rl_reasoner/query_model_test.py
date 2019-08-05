@@ -112,7 +112,7 @@ def main(query_entity, query_relation):
 
   reward = []
 
-  print(os.getwcd())
+  print(os.getcwd())
   print(save_path + env.spec["id"])
 
   episode = sampler.collect_one_episode(query_entity = query_entity, query_relation = query_relation)
