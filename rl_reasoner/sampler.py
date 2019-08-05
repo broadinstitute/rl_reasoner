@@ -40,7 +40,7 @@ class Sampler(object):
         observations, available_actions, actions, rewards = [], [], [], []
         init_states = tuple([] for _ in range(self.num_layers))
 
-        if query_entity is None or query_relation is None or targets=None:
+        if query_entity is None or query_relation is None or targets is None:
             query_entity = random.choice(list(self.queries.keys()))
             query_relation = random.choice(list(self.queries[query_entity].keys()))
             targets = self.queries[query_entity][query_relation]
