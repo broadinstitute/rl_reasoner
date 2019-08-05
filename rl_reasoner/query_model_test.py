@@ -133,4 +133,4 @@ def main(query_entity, query_relation):
               f.write("{0}\n".format(np.sum(episode["rewards"][i])))
 
 if __name__ == '__main__':
-  main()
+  main(185855, "HAS_INDICATION")
