@@ -15,9 +15,12 @@ from openapi_server.models.result import Result
 def query(query_graph):
     #q = Query()
 
+    nodemap = {n.id: n for n in query_graph.nodes}
+    print(nodemap)
+
     if len(query_graph.edges) == 1:
-        source_node = query_graph.nodes[query_graph.edges[0].source_id]
-        target_node = query_graph.nodes[query_graph.edges[0].target_id]
+        source_node = nodemap[query_graph.edges[0].source_id]
+        target_node = nodemap[query_graph.edges[0].target_id]
 
         if source_node.type == "chemcial_substance" & target_node.type == "disease" & target_node.curie == "?":
             query_entity = source_node.curie
