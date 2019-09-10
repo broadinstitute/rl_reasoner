@@ -13,7 +13,7 @@ from openapi_server.models.result import Result
 
 
 def query(query_graph):
-    #q = Query()
+    q = Query()
 
     nodemap = {n.id: n for n in query_graph.nodes}
 
@@ -24,9 +24,7 @@ def query(query_graph):
         if source_node.type == "chemical_substance" and target_node.type == "disease" and target_node.curie == "?":
             query_entity = source_node.curie
             query_relation = query_graph.edges[0].type
-            print(query_entity)
-            print(query_relation)
-            return q.query(query_entity, query_relation)
+            return q.query(int(query_entity), query_relation)
     
     msg =  "graph query not implemented"
     return( { "status": 501, "title": msg, "detail": msg, "type": "about:blank" }, 501 )
