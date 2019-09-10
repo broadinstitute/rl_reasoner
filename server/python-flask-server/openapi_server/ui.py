@@ -5,8 +5,8 @@ from rl_reasoner.query import Query
 from openapi_server.models.message import Message
 from openapi_server.models.node import Node
 from openapi_server.models.edge import Edge
-from openapi_server.models.node_attribute import NodeAttribute
-from openapi_server.models.edge_attribute import EdgeAttribute
+#from openapi_server.models.node_attribute import NodeAttribute
+#from openapi_server.models.edge_attribute import EdgeAttribute
 from openapi_server.models.knowledge_graph import KnowledgeGraph
 from openapi_server.models.result import Result
 from openapi_server.models.message_terms import MessageTerms
