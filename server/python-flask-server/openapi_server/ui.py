@@ -9,7 +9,7 @@ from openapi_server.models.node_attribute import NodeAttribute
 from openapi_server.models.edge_attribute import EdgeAttribute
 from openapi_server.models.knowledge_graph import KnowledgeGraph
 from openapi_server.models.result import Result
-from openapi_server.models.message_terms import 
+from openapi_server.models.message_terms import MessageTerms
 
 
 def query(query_graph):
