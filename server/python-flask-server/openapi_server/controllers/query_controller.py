@@ -2,9 +2,9 @@ import connexion
 import six
 
 from openapi_server.models.message import Message  # noqa: E501
-from swagger_server.models.query import Query
+from openapi_server.models.query import Query
 from openapi_server import util
-from swagger_server import ui
+from openapi_server import ui
 
 
 def query(request_body):  # noqa: E501
