@@ -6,6 +6,11 @@
           "id": "n00",
           "curie": "185855",
           "type": "chemical_substance"
+        },
+        {
+          "id": "n01",
+          "curie": "?",
+          "type": "disease"
         }
       ],
       "edges": [
