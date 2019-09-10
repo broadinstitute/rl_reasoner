@@ -19,6 +19,7 @@ def query(request_body):  # noqa: E501
     """
     if connexion.request.is_json:
         body = Query.from_dict(connexion.request.get_json())  # noqa: E501
+        print(body)
         return ui.query(body.query_message.query_graph)
 
     return({"status": 400, "title": "body content not JSON", "detail": "Required body content is not JSON", "type": "about:blank"}, 400)
