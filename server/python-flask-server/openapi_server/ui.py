@@ -16,7 +16,6 @@ def query(query_graph):
     #q = Query()
 
     nodemap = {n.id: n for n in query_graph.nodes}
-    print(nodemap)
 
     if len(query_graph.edges) == 1:
         source_node = nodemap[query_graph.edges[0].source_id]
@@ -25,6 +24,8 @@ def query(query_graph):
         if source_node.type == "chemical_substance" and target_node.type == "disease" and target_node.curie == "?":
             query_entity = source_node.curie
             query_relation = query_graph.edges[0].type
+            print(query_entity)
+            print(query_relation)
             return q.query(query_entity, query_relation)
     
     msg =  "graph query not implemented"
