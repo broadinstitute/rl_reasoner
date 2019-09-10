@@ -13,8 +13,9 @@ from openapi_server.models.result import Result
 
 
 def query(query_graph):
-    q = Query()
+    #q = Query()
 
+    print(query_graph.edges)
     if length(query_graph.edges) == 1:
         source_node = query_graph.nodes[query_graph.edges[0].source_id]
         target_node = query_graph.nodes[query_graph.edges[0].target_id]
