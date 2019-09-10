@@ -10,7 +10,7 @@ from rl_reasoner.environment import Neo4jEnvironment
 class Query():
 
     def __init__(self):  # noqa: E501
-        base_folder = "results/" + "2019-07-12_13-26-35.576782"
+        base_folder = "/home/mwawer/src/rl_reasoner/rl_reasoner/results/" + "2019-07-12_13-26-35.576782"
         config = json.load(open(base_folder + "/configuration.json"))
 
         # read embeddings
