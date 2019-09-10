@@ -1,0 +1,21 @@
+{
+  "message": {
+    "query_graph": {
+      "nodes": [
+        {
+          "id": "n00",
+          "curie": "185855",
+          "type": "chemical_substance"
+        }
+      ],
+      "edges": [
+        {
+          "id": "e00",
+          "type": "HAS_INDICATION",
+          "source_id": "n00",
+          "target_id": "n01"
+        }
+      ]
+    }
+  }
+}
