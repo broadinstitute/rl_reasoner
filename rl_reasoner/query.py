@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import json
 import tensorflow as tf
 from rl_reasoner.pg_rnn import PolicyGradientRNN
@@ -10,6 +11,7 @@ from rl_reasoner.environment import Neo4jEnvironment
 class Query():
 
     def __init__(self):  # noqa: E501
+        os.chdir("/home/mwawer/src/rl_reasoner/rl_reasoner")
         base_folder = "/home/mwawer/src/rl_reasoner/rl_reasoner/results/" + "2019-07-12_13-26-35.576782"
         config = json.load(open(base_folder + "/configuration.json"))
 
