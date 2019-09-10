@@ -27,7 +27,7 @@
           "id": "e00",
           "type": "HAS_INDICATION",
           "source_id": "n00",
-          "target_id": "n01",
+          "target_id": "n01"
         }
       ]
     }
