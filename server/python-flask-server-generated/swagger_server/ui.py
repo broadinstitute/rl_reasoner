@@ -2,14 +2,14 @@ import datetime
 
 from rl_reasoner.query import Query
 ##from swagger_server.models.response import Response  # noqa: E501
-from swagger_server.models.message import Message
-from swagger_server.models.node import Node
-from swagger_server.models.edge import Edge
-from swagger_server.models.node_attribute import NodeAttribute
-from swagger_server.models.edge_attribute import EdgeAttribute
-from swagger_server.models.knowledge_graph import KnowledgeGraph
-from swagger_server.models.result import Result
-from swagger_server.models.message_terms import MessageTerms
+# from swagger_server.models.message import Message
+# from swagger_server.models.node import Node
+# from swagger_server.models.edge import Edge
+# from swagger_server.models.node_attribute import NodeAttribute
+# from swagger_server.models.edge_attribute import EdgeAttribute
+# from swagger_server.models.knowledge_graph import KnowledgeGraph
+# from swagger_server.models.result import Result
+# from swagger_server.models.message_terms import MessageTerms
 
 
 def query(query_graph):
