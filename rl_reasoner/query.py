@@ -1,10 +1,10 @@
 import numpy as np
 import json
 import tensorflow as tf
-from pg_rnn import PolicyGradientRNN
-from sampler import Sampler
-from model import policy_network
-from environment import Neo4jEnvironment
+from rl_reasoner.pg_rnn import PolicyGradientRNN
+from rl_reasoner.sampler import Sampler
+from rl_reasoner.model import policy_network
+from rl_reasoner.environment import Neo4jEnvironment
 
 
 class Query():
