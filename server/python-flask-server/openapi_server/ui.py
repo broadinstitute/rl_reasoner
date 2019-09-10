@@ -22,7 +22,7 @@ def query(query_graph):
         source_node = nodemap[query_graph.edges[0].source_id]
         target_node = nodemap[query_graph.edges[0].target_id]
 
-        if source_node.type == "chemcial_substance" & target_node.type == "disease" & target_node.curie == "?":
+        if source_node.type == "chemical_substance" and target_node.type == "disease" and target_node.curie == "?":
             query_entity = source_node.curie
             query_relation = query_graph.edges[0].type
             return q.query(query_entity, query_relation)
