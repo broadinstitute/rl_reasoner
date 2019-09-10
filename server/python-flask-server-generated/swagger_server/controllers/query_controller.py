@@ -4,6 +4,7 @@ import six
 from swagger_server.models.message import Message  # noqa: E501
 from swagger_server import util
 
+from swagger_server import ui
 
 def query(body):  # noqa: E501
     """Query reasoner via one of several inputs
@@ -17,4 +18,6 @@ def query(body):  # noqa: E501
     """
     if connexion.request.is_json:
         body = Dict.from_dict(connexion.request.get_json())  # noqa: E501
-    return 'do some magic!'
+        return ui.query(body.query_message.query_graph)
+
+    return({"status": 400, "title": "body content not JSON", "detail": "Required body content is not JSON", "type": "about:blank"}, 400)
