@@ -1,0 +1,27 @@
+{
+  "batch_size": 20,
+  "embedding_size": 128,
+  "mlp_hidden_size": 10,
+  "entropy_bonus": 0.4,
+  "env_name": "knowledge_graph",
+  "gru_unit_size": 8,
+  "learning": {"learning_rate": 0.01,
+               "learning_adaptive": 0,
+               "decay_steps": 1000,
+               "decay_rate": 0.9
+             },
+  "loss_function": "cross_entropy",
+  "max_gradient_norm": 5.0,
+  "max_step": 3,
+  "num_itr": 2000,
+  "num_layers": 1,
+  "num_step": 3,
+  "train": 1,
+  "discount": 1.0,
+  "baseline_learning_rate":0.01,
+  "train_entity_embeddings": true,
+  "train_relation_embeddings": true,
+  "query_file": "../data/drug_hasIndication_disease_all.txt",
+  "entity_embedding_file": "../data/kg_entity_embeddings.txt",
+  "relation_embedding_file": ""
+}

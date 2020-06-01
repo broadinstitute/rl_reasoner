@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import scipy.signal
 import tensorflow as tf
 
@@ -7,6 +8,7 @@ class Sampler(object):
     def __init__(self,
                  policy,
                  env,
+                 queries,
                  gru_unit_size=16,
                  num_step=10,
                  num_layers=1,
@@ -16,6 +18,7 @@ class Sampler(object):
                  summary_writer=None):
         self.policy = policy
         self.env = env
+        self.queries = queries
         self.gru_unit_size = gru_unit_size
         self.num_step = num_step
         self.num_layers = num_layers
@@ -34,10 +37,16 @@ class Sampler(object):
     def compute_monte_carlo_returns(self, rewards):
         return scipy.signal.lfilter([1.], [1, -self.discount], rewards[::-1])[::-1]
 
-    def collect_one_episode(self):
+    def collect_one_episode(self, query_entity=None, query_relation=None, targets=[]):
         observations, available_actions, actions, rewards = [], [], [], []
         init_states = tuple([] for _ in range(self.num_layers))
-        observation, available_actions_ep, query_relation = self.env.reset()
+
+        if query_entity is None or query_relation is None:
+            query_entity = random.choice(list(self.queries.keys()))
+            query_relation = random.choice(list(self.queries[query_entity].keys()))
+            targets = self.queries[query_entity][query_relation]
+
+        observation, available_actions_ep, query_relation = self.env.reset(query_entity, query_relation, targets)
         init_state = tuple([np.zeros((1, self.gru_unit_size)) for _ in range(self.num_layers)])
 
         for t in range(self.max_step):
